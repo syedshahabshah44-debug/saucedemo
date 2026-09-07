@@ -18,6 +18,14 @@ jobs:
         with:
           node-version: 20
 
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install project dependencies
         run: npm install
 
@@ -26,3 +34,20 @@ jobs:
 
       - name: Run Cypress tests (headless)
         uses: cypress-io/github-action@v6
+        with:
+          browser: chrome
+          headless: true
+
+      - name: Upload screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+
+      - name: Upload videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-videos
+          path: cypress/videos
